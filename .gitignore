@@ -1,0 +1,10 @@
+# Python gereksizleri
+__pycache__/
+*.py[cod]
+*$py.class
+
+# VS Code ayarları
+.vscode/
+
+# Veri setleri (Çok büyüklerse göndermek istemeyebilirsin)
+# data/*.json
