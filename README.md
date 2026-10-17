@@ -26,10 +26,10 @@ Proje kapsamında, KuzuDB düğümlerinden dönen bilgi parçası aday sayısı 
 Yapılan testlerde, N=10000 aday bilgi parçası seviyesinde Dinamik Programlama'nın yönlendirme süresi devasa bir hızla artarak **135 saniyeye** ulaşmış (çok yüksek TTFT gecikmesi), Genetik Algoritma ise aynı önbellek tahsis kararını yaklaşık **19 saniyede** vererek Edge cihazlar için daha uygulanabilir bir performans sergilemiştir.
 
 ### Zaman Karmaşıklığı Analizi (TTFT Gecikmesi)
-![Zaman Karşılaştırması](results/time_comparison.png)
+![Zaman Karşılaştırması](new_results/time_comparison.png)
 
 ### Doğruluk Sapma Oranı (İdeal Önbellekten Sapma)
-![Doğruluk Sapması](results/accuracy_gap.png)
+![Doğruluk Sapması](new_results/accuracy_gap.png)
 
 ## 👥 Proje Ekibi
 * **Busenur Çam**
