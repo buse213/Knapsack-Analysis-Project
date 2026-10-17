@@ -1,41 +1,52 @@
-# Büyük Ölçekli Sırt Çantası (Knapsack) Problemi: Performans Analizi
+# Edge LLM ve RAG Sistemlerinde Önbellek (Cache) Optimizasyonu
 
-Bu proje, kombinatoryal optimizasyon problemlerinin temel taşlarından biri olan **0/1 Sırt Çantası (Knapsack) Problemi**'nin çözümünde kullanılan iki farklı metodolojinin; **Dinamik Programlama (Deterministik)** ve **Genetik Algoritma (Sezgisel)** yaklaşımlarının performans kıyaslamasını içermektedir.
+Bu proje, 4 adet Mini PC (her biri 16 GB RAM) üzerinde kümelenmiş (clustered) olarak koşan Qwen 7B modeli ve KuzuDB tabanlı bir RAG (Retrieval-Augmented Generation) mimarisinin önbellek yönetimini optimize etmeyi amaçlamaktadır. 
+
+Yönlendirici (Router) görevi gören ana PC1 üzerindeki kısıtlı 4 GB'lık boş RAM alanına (Cache Limit), dağıtık veritabanından gelen hangi bilgi parçalarının (chunk/token) yerleştirileceği problemi; **Dinamik Programlama (Kesin Çözüm)** ve **Genetik Algoritma (Sezgisel Çözüm)** yaklaşımlarıyla kıyaslanmıştır.
 
 ## 📌 Proje Özeti
-Proje kapsamında, eleman sayısı $N=100$, $N=1000$ ve $N=10000$ olan farklı veri setleri üzerinde deneyler yapılmıştır. Temel odak noktası, veri boyutu büyüdükçe kesin çözüm sunan algoritmaların (DP) zaman maliyeti ile yaklaşık çözüm sunan sezgisel algoritmaların (GA) ölçeklenebilirliği arasındaki dengeyi (trade-off) analiz etmektir.
+Proje kapsamında, KuzuDB düğümlerinden dönen bilgi parçası aday sayısı N=100, N=1000 ve N=10000 olan farklı veri setleri (token grupları) üzerinde deneyler yapılmıştır. Temel odak noktası, bağlam (context) boyutu büyüdükçe RAG sisteminin kullanıcıya ilk kelimeyi verme süresi olan **TTFT (Time To First Token)** gecikmesi ile sistemin ürettiği cevapların **Uygunluk Skoru (Retrieval Rate)** arasındaki dengeyi (trade-off) analiz etmektir.
 
 ## 🚀 Kullanılan Algoritmalar
 
 ### 1. Dinamik Programlama (DP)
-- **Yaklaşım:** Tablolama (Bottom-up) mantığı ile kesin sonucu garanti eder.
-- **Optimizasyon:** Bellek maliyetini düşürmek için 1-Boyutlu dizi optimizasyonu kullanılmıştır.
-- **Karmaşıklık:** $O(N \times W)$ zaman karmaşıklığına sahiptir.
+- **Yaklaşım:** Tablolama (Bottom-up) mantığı ile önbellek sınırını aşmadan elde edilebilecek maksimum uygunluk skorunu garanti eder.
+- **Optimizasyon:** Bellek maliyetini (MemoryError) engellemek için 1-Boyutlu dizi optimizasyonu kullanılmıştır.
+- **Dezavantaj:** Veri parçası (N) arttığında zaman karmaşıklığı çok yükselir, bu da Edge LLM senaryolarında kabul edilemez bir TTFT gecikmesine yol açar.
 
 ### 2. Genetik Algoritma (GA)
-- **Yaklaşım:** Doğal seçilim, çaprazlama ve mutasyon mekanizmalarını kullanan evrimsel arama.
-- **Parametreler:** - Popülasyon: 100
+- **Yaklaşım:** Doğal seçilim, çaprazlama ve mutasyon mekanizmalarını kullanarak optimum cache tahsisini evrimsel olarak arar.
+- **Parametreler:**
+  - Popülasyon (Aday Cache Durumları): 100
   - Seçilim: Turnuva (k=3)
   - Mutasyon Oranı: %1
-- **Avantaj:** Devasa arama uzaylarında makul sürede "yeterince iyi" sonuçlar üretir.
+- **Avantaj:** Devasa arama uzaylarında, ideal uygunluk skorundan çok az saparak TTFT gecikmesini saniyeler seviyesine indirir.
 
 ## 📊 Deneysel Bulgular
-Yapılan testlerde, $N=10000$ seviyesinde Dinamik Programlama'nın hesaplama süresi logaritmik olmayan bir hızla artarak **143 saniyeye** ulaşmış, Genetik Algoritma ise aynı veri setini yaklaşık **20 saniyede** analiz etmiştir.
+Yapılan testlerde, N=10000 aday bilgi parçası seviyesinde Dinamik Programlama'nın yönlendirme süresi devasa bir hızla artarak **135 saniyeye** ulaşmış (çok yüksek TTFT gecikmesi), Genetik Algoritma ise aynı önbellek tahsis kararını yaklaşık **19 saniyede** vererek Edge cihazlar için daha uygulanabilir bir performans sergilemiştir.
 
-### Zaman Karmaşıklığı Analizi
+### Zaman Karmaşıklığı Analizi (TTFT Gecikmesi)
 ![Zaman Karşılaştırması](results/time_comparison.png)
 
-### Doğruluk Sapma Oranı (Accuracy Gap)
+### Doğruluk Sapma Oranı (İdeal Önbellekten Sapma)
 ![Doğruluk Sapması](results/accuracy_gap.png)
 
+## 👥 Proje Ekibi
+* **Busenur Çam**
+* **Metin Serinkaya**
+
 ## 📁 Proje Yapısı
-```text
-├── src/
-│   └── knapsack_analysis.py    # Algoritma implementasyonları ve testler
-├── results/
-│   ├── time_comparison.png     # Performans grafiği
-│   └── accuracy_gap.png        # Sapma oranı grafiği
-├── report/
-│   ├── Metin_Serinkaya_Knapsack_Report.pdf  # Detaylı akademik rapor (IEEE)
-│   └── main.tex                # Raporun LaTeX kaynak kodları
-└── README.md                   # Proje dokümantasyonu
+
+    ├── src/
+    │   ├── algorithms/
+    │   │   ├── dp_solver.py         # DP tabanlı kesin önbellek çözümü
+    │   │   └── ga_solver.py         # GA tabanlı sezgisel önbellek yönetimi
+    │   ├── utils/
+    │   │   ├── generator.py         # Token ve uygunluk skoru veri üreticisi
+    │   │   └── plotter.py           # Akademik grafik çizdirme aracı
+    │   └── main.py                  # RAG senaryosu ana yürütme dosyası
+    ├── data/                        # JSON formatlı chunk veri setleri
+    ├── results/                     # Çıktı grafikleri
+    ├── report/
+    │   └── Busenur_Metin_LLM_Cache_Report.docx  # Muş Alparslan Univ. Journal of Science Makalesi
+    └── README.md                    # Proje dokümantasyonu
