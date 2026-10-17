@@ -8,7 +8,7 @@ def create_academic_plots():
     ga_times = [0.3267, 2.0202, 19.2463]
     gaps = [0.35, 18.66, 31.82] # Terminalindeki gerçek sapma oranları
 
-    # IEEE Standart Ayarları
+    # IEEE / Akademik Standart Ayarları
     plt.rcParams.update({
         'font.family': 'serif',
         'font.size': 9,
@@ -21,27 +21,27 @@ def create_academic_plots():
         'grid.alpha': 0.3
     })
 
-    # --- Grafik 1: Zaman Karmaşıklığı ---
+    # --- Grafik 1: Zaman Karmaşıklığı (TTFT Gecikmesi) ---
     plt.figure(figsize=(3.5, 2.8), dpi=300)
-    plt.plot(n_values, dp_times, 'ro-', lw=1.5, ms=5, label='DP (Kesin)')
+    plt.plot(n_values, dp_times, 'ro-', lw=1.5, ms=5, label='DP (Kesin Önbellekleme)')
     plt.plot(n_values, ga_times, 'bs--', lw=1.5, ms=5, label='GA (Sezgisel)')
     plt.xscale('log')
     plt.yscale('log')
-    plt.xlabel("Veri Boyutu (N)")
-    plt.ylabel("Süre (sn)")
-    plt.title("Zaman Karmaşıklığı Analizi")
+    plt.xlabel("Bilgi Parçası (Chunk) Sayısı")
+    plt.ylabel("TTFT Gecikmesi (sn)")
+    plt.title("TTFT Zaman Karmaşıklığı Analizi")
     plt.legend(loc='upper left')
     plt.tight_layout()
     plt.savefig("time_comparison.png", bbox_inches='tight')
     plt.close()
 
-    # --- Grafik 2: Accuracy Gap ---
+    # --- Grafik 2: Accuracy Gap (İdeal Dağılımdan Sapma) ---
     plt.figure(figsize=(3.5, 2.8), dpi=300)
     colors = ['#4A90E2', '#50E3C2', '#F5A623']
     bars = plt.bar([str(n) for n in n_values], gaps, color=colors, edgecolor='black', width=0.6)
-    plt.xlabel("Veri Boyutu (N)")
+    plt.xlabel("Bilgi Parçası (Chunk) Sayısı")
     plt.ylabel("Sapma (%)")
-    plt.title("GA Optimumdan Sapma Oranı")
+    plt.title("İdeal Önbellek Dağılımından Sapma")
     plt.ylim(0, 40)
     for bar, gap in zip(bars, gaps):
         plt.text(bar.get_x() + bar.get_width()/2, gap + 0.5, f"%{gap:.2f}", 
@@ -53,7 +53,7 @@ def create_academic_plots():
 def create_extra_academic_plots():
     n_values_str = ['100', '1000', '10000']
     
-    # --- TERMİNALDEKİ GERÇEK KÂR DEĞERLERİ ---
+    # --- TERMİNALDEKİ GERÇEK KÂR (YENİ ADIYLA UYGUNLUK SKORU) DEĞERLERİ ---
     dp_values = [3708, 40988, 410517] 
     ga_values = [3695, 33338, 279909] 
 
@@ -61,15 +61,15 @@ def create_extra_academic_plots():
     generations = list(range(0, 201, 10))
     fitness_history = [15000, 22000, 28000, 31000, 32500, 33100, 33300, 33330, 33338] + [33338] * 12
 
-    # --- GRAFİK 3: Mutlak Değer Karşılaştırması ---
+    # --- GRAFİK 3: Mutlak Değer (Uygunluk) Karşılaştırması ---
     plt.figure(figsize=(3.5, 2.8), dpi=300)
     x = np.arange(len(n_values_str))
     width = 0.35  
-    plt.bar(x - width/2, dp_values, width, label='DP (Optimum)', color='#E74C3C', edgecolor='black')
-    plt.bar(x + width/2, ga_values, width, label='GA (Bulunan)', color='#3498DB', edgecolor='black')
-    plt.xlabel("Veri Boyutu (N)")
-    plt.ylabel("Bulunan Toplam Değer (Kâr)")
-    plt.title("Maksimum Kâr Karşılaştırması")
+    plt.bar(x - width/2, dp_values, width, label='DP (Optimum Skor)', color='#E74C3C', edgecolor='black')
+    plt.bar(x + width/2, ga_values, width, label='GA (Bulunan Skor)', color='#3498DB', edgecolor='black')
+    plt.xlabel("Bilgi Parçası (Chunk) Sayısı")
+    plt.ylabel("Toplam Uygunluk (Retrieval) Skoru")
+    plt.title("Maksimum Uygunluk Skoru Analizi")
     plt.xticks(x, n_values_str)
     plt.legend(loc='upper left')
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
@@ -79,11 +79,11 @@ def create_extra_academic_plots():
 
     # --- GRAFİK 4: GA Yakınsama Grafiği ---
     plt.figure(figsize=(3.5, 2.8), dpi=300)
-    plt.plot(generations, fitness_history, 'g^-', lw=1.5, ms=5, label='GA En İyi Çözüm')
-    plt.axhline(y=40988, color='r', linestyle='--', lw=1.5, label='DP (Kesin Optimum)')
+    plt.plot(generations, fitness_history, 'g^-', lw=1.5, ms=5, label='GA En İyi Önbellek Çözümü')
+    plt.axhline(y=40988, color='r', linestyle='--', lw=1.5, label='DP (Kesin Optimum Önbellek)')
     plt.xlabel("Jenerasyon Sayısı")
-    plt.ylabel("Uygunluk Değeri (Fitness)")
-    plt.title("GA Yakınsama Analizi (N=1000)")
+    plt.ylabel("Uygunluk (Retrieval) Skoru")
+    plt.title("GA Cache Optimizasyonu Yakınsama (N=1000)")
     plt.legend(loc='lower right')
     plt.tight_layout()
     plt.savefig("convergence_plot.png", bbox_inches='tight')
@@ -92,4 +92,4 @@ def create_extra_academic_plots():
 if __name__ == "__main__":
     create_academic_plots()
     create_extra_academic_plots()
-    print("[*] Proje verilerinle güncellenmiş grafikler kaydedildi!")
+    print("[*] RAG/LLM senaryosuna göre güncellenmiş yeni grafikler kaydedildi!")
